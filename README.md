@@ -55,19 +55,12 @@ The platform should have two major systems:
 1. Agricultural Marketplace: Farmers list their products, buyers compare prices, negotiate, place bulk orders, and arrange delivery.
 2. Mandi Price Intelligence: Users check daily Kalimati prices, historical prices, price fluctuations, and market trends before buying or selling.
 1. Main user roles
+customer
 
-Farmer / Producer
-
-Lists vegetables and fruits, manages stock, receives orders, sets prices, and tracks earnings.
-
-Reseller / Wholesaler
-
-Finds local products, compares farmer prices with Kalimati prices, negotiates, and purchases in bulk.
-
-Retailer / Business Buyer
-
-Purchases products for grocery stores, restaurants, hotels, and supermarkets.
+Finds local products, compares farmer prices with Kalimati prices, negotiates, and purchases prices.
 
 Admin
 
 Manages market data, handles complaints, monitors transactions, and controls platform operations.
+
+Lists vegetables and fruits, manages stock, receives orders, sets prices, and tracks earnings.
