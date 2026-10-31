@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block content %}
+{% if admin_dashboard %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<div class="app-dashboard">
+  <aside class="dashboard-sidebar">
+    <a class="dashboard-brand" href="{{ url_for('dashboard.admin') }}"><span class="brand-mark">▯</span><span><strong>Krishi</strong>Direct<small>Smart farming</small></span></a>
+    <nav class="dashboard-nav">
+      <a class="active" href="{{ url_for('dashboard.admin') }}">⌂ <span>Dashboard</span></a>
+      <a href="{{ url_for('dashboard.marketplace') }}">🛒 <span>Marketplace</span></a>
+      <a href="{{ url_for('dashboard.market_prices') }}">▣ <span>Market prices</span></a>
+      <a href="{{ url_for('dashboard.import_market_prices') }}">↥ <span>Import prices</span></a>
+      <a href="{{ url_for('profile.profile') }}">⚙ <span>Manage profile</span></a>
+    </nav>
+    <div class="dashboard-user"><span class="avatar">{{ current_user.full_name[:2]|upper }}</span><span><strong>Admin</strong><small>{{ current_user.email }}</small></span></div>
+  </aside>
+  <main class="dashboard-main">
+    <header class="dashboard-topbar"><div><p class="eyebrow">KrishiDirect overview</p><h1>Dashboard</h1><p class="muted">Welcome back! Here's your marketplace overview.</p></div><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout-button">Log out</button></form></header>
+    <section class="admin-metrics">
+      <article class="admin-metric"><span>Total Revenue</span><strong>Rs. {{ "%.0f"|format(total_revenue) }}</strong><small class="positive">↗ Marketplace orders</small><span class="metric-icon revenue">↗</span></article>
+      <article class="admin-metric"><span>Registered Users</span><strong>{{ total_users }}</strong><small>All roles</small><span class="metric-icon inventory">◇</span></article>
+      <article class="admin-metric"><span>Marketplace Listings</span><strong>{{ marketplace_listings }}</strong><small>Active products</small><span class="metric-icon listings">⌑</span></article>
+    </section>
+    <section class="admin-chart-grid">
+      <article class="admin-panel"><div class="panel-heading"><h2>Revenue Trend</h2><span>Last six months</span></div><div class="chart-wrap"><canvas id="revenue-chart" aria-label="Revenue trend"></canvas></div></article>
+      <article class="admin-panel"><div class="panel-heading"><h2>Marketplace Activity</h2><span>Current totals</span></div><div class="bar-chart">{% for label, count in [('Products', activity_counts[0]), ('Orders', activity_counts[1]), ('Farmers', activity_counts[2]), ('Buyers', activity_counts[3])] %}<div><span class="bar" style="height:{{ ((count / ([activity_counts[0], activity_counts[1], activity_counts[2], activity_counts[3]]|max or 1)) * 100)|round }}%"></span><strong>{{ count }}</strong><small>{{ label }}</small></div>{% endfor %}</div></article>
+    </section>
+    <section class="admin-panel activity-panel"><div class="panel-heading"><h2>Recent Activity</h2></div>{% for activity in recent_activity %}<div class="activity-row"><span class="activity-dot"></span><div><strong>{{ activity.event|replace("_", " ")|title }}</strong><small>{{ activity.details or "Account activity recorded" }}</small><small>{{ activity.created_at.strftime("%d %b %Y, %H:%M") }}</small></div></div>{% else %}<div class="empty-state">No recent activity recorded.</div>{% endfor %}</section>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>new Chart(document.getElementById("revenue-chart"),{type:"line",data:{labels:{{ revenue_labels|tojson }},datasets:[{data:{{ revenue_values|tojson }},borderColor:"#159447",backgroundColor:"#15944718",fill:true,tension:.35,pointBackgroundColor:"#fff",pointBorderColor:"#159447",pointBorderWidth:2}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:"#edf1ed"}},x:{grid:{color:"#edf1ed"}}}}});</script>
+{% else %}
+<section class="card dashboard"><p class="eyebrow">KrishiDirect</p><h1>{{ title }}</h1><p>Your role-based workspace is ready.</p></section>
+{% endif %}{% endblock %}

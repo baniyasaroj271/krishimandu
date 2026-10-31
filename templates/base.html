@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or "KrishiDirect" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<nav class="nav"><a class="brand" href="{{ url_for('auth.login') }}">🌱 Krishi<span>Direct</span></a>
+{% if current_user.is_authenticated %}{% if current_user.role == "reseller" %}<a href="{{ url_for('dashboard.marketplace') }}">Marketplace</a><a href="{{ url_for('dashboard.cart') }}">Cart</a>{% elif current_user.role == "farmer" %}<a href="{{ url_for('dashboard.inventory') }}">Inventory</a><a href="{{ url_for('dashboard.farmer_orders') }}">Orders</a>{% endif %}<a href="{{ url_for('profile.profile') }}">Manage profile</a><form method="post" action="{{ url_for('auth.logout') }}" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="link-button">Logout</button></form>{% endif %}</nav>
+<main class="shell">{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}{% block content %}{% endblock %}</main>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body></html>

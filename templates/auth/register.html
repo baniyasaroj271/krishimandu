@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block content %}
+<form class="card form narrow" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Create your account</h2>
+  <p class="muted">Register simply to check prices and use KrishiDirect.</p>
+  <label>Email address<input type="email" name="email" required autocomplete="email"></label>
+  <label>Phone number<input type="tel" name="phone" required autocomplete="tel"></label>
+  <label>Password<input type="password" name="password" required minlength="6" autocomplete="new-password"><small>At least 6 characters.</small></label>
+  <label>Your location<input name="location" required placeholder="City, district or municipality" autocomplete="address-level2"></label>
+  <label>User type
+    <select name="role" required>
+      <option value="customer">Customer - check prices and news</option>
+      <option value="farmer">Farmer</option>
+      <option value="reseller">Reseller / Wholesaler</option>
+    </select>
+  </label>
+  <button class="primary" type="submit">Create account</button>
+  <p class="center">Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+</form>
+{% endblock %}
