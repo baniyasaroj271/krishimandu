@@ -19,3 +19,21 @@ document.querySelectorAll("input[name=role]").forEach((input) => input.addEventL
   });
 }));
 
+document.querySelector("[data-sidebar-toggle]")?.addEventListener("click", () => {
+  document.querySelector("[data-dashboard]")?.classList.toggle("sidebar-open");
+});
+
+document.querySelector("[data-notification-toggle]")?.addEventListener("click", () => {
+  document.querySelector("[data-notification-panel]")?.classList.toggle("is-visible");
+});
+
+document.querySelector("[data-profile-toggle]")?.addEventListener("click", () => {
+  document.querySelector("[data-profile-menu]")?.classList.toggle("is-visible");
+});
+
+document.querySelector("[data-price-search]")?.addEventListener("input", (event) => {
+  const query = event.target.value.trim().toLowerCase();
+  document.querySelectorAll("[data-price-row]").forEach((row) => {
+    row.hidden = query && !row.textContent.toLowerCase().includes(query);
+  });
+});

@@ -132,6 +132,9 @@ class Order(db.Model):
 
 
 class MarketPrice(db.Model):
+    __table_args__ = (
+        db.UniqueConstraint("source_identity", "market_date_bs", name="uq_market_price_publication"),
+    )
     id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String(150), nullable=False, index=True)
     market_name = db.Column(db.String(150), nullable=False, default="Kalimati")
@@ -144,6 +147,25 @@ class MarketPrice(db.Model):
     price_date = db.Column(db.Date, nullable=False, index=True)
     source_url = db.Column(db.String(500), nullable=True)
     synced_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    product_name_ne = db.Column(db.String(150), nullable=True)
+    product_name_en = db.Column(db.String(150), nullable=True)
+    market_date_bs = db.Column(db.String(40), nullable=True)
+    market_date_ad = db.Column(db.Date, nullable=True)
+    fetched_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    sync_status = db.Column(db.String(20), nullable=False, default="success")
+    source_identity = db.Column(db.String(180), nullable=True, index=True)
+
+
+class MarketSync(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    started_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    completed_at = db.Column(db.DateTime(timezone=True))
+    status = db.Column(db.String(20), nullable=False)
+    publication_date_bs = db.Column(db.String(40))
+    publication_date_ad = db.Column(db.Date)
+    imported_count = db.Column(db.Integer, nullable=False, default=0)
+    error_message = db.Column(db.Text)
+    source_url = db.Column(db.String(500), nullable=False)
 
 
 class FavouriteFarmer(db.Model):

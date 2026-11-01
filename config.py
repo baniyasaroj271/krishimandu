@@ -32,3 +32,6 @@ class Config:
     SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
     SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
     SMTP_FROM = os.environ.get("SMTP_FROM", "no-reply@example.com")
+    KALIMATI_SYNC_ENABLED = os.environ.get("KALIMATI_SYNC_ENABLED", "1") == "1"
+    KALIMATI_SYNC_INTERVAL_MINUTES = int(os.environ.get("KALIMATI_SYNC_INTERVAL_MINUTES", "60"))
+    KALIMATI_SYNC_TIMEOUT_SECONDS = int(os.environ.get("KALIMATI_SYNC_TIMEOUT_SECONDS", "20"))

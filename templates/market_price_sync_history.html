@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="dashboard-page">
+  <div class="dashboard-heading">
+    <div><p class="eyebrow">Admin controls</p><h1>Kalimati sync history</h1><p class="muted">Successful imports are retained as historical snapshots. Failed attempts never replace existing prices.</p></div>
+    <a class="button" href="{{ url_for('dashboard.import_market_prices') }}">Back to sync controls</a>
+  </div>
+  <section class="card table-card">
+    <div class="price-table">
+      <div class="price-row price-header"><strong>Started</strong><strong>Status</strong><strong>Publication</strong><strong>Imported</strong><strong>Details</strong></div>
+      {% for sync in sync_history %}
+      <div class="price-row"><span>{{ sync.started_at.strftime("%d %b %Y %H:%M") }}</span><span>{{ sync.status|title }}</span><span>{{ sync.publication_date_bs or "—" }}</span><span>{{ sync.imported_count }}</span><span>{{ sync.error_message or "—" }}</span></div>
+      {% else %}<p class="empty-state">No synchronization attempts have been recorded.</p>{% endfor %}
+    </div>
+  </section>
+</section>
+{% endblock %}

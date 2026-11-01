@@ -12,8 +12,7 @@ from models import AuditLog, User
 
 ROLE_DASHBOARDS = {
     "admin": "dashboard.admin",
-    "farmer": "dashboard.dashboard_home",
-    "reseller": "dashboard.dashboard_home",
+    "farmer": "dashboard.farmer",
     "customer": "dashboard.dashboard_home",
 }
 

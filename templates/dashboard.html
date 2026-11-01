@@ -1,33 +1,61 @@
-{% extends "base.html" %}{% block content %}
-{% if admin_dashboard %}
+{% extends "base.html" %}
+{% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-<div class="app-dashboard">
+<div class="app-dashboard reference-dashboard" data-dashboard>
   <aside class="dashboard-sidebar">
-    <a class="dashboard-brand" href="{{ url_for('dashboard.admin') }}"><span class="brand-mark">▯</span><span><strong>Krishi</strong>Direct<small>Smart farming</small></span></a>
-    <nav class="dashboard-nav">
-      <a class="active" href="{{ url_for('dashboard.admin') }}">⌂ <span>Dashboard</span></a>
-      <a href="{{ url_for('dashboard.marketplace') }}">🛒 <span>Marketplace</span></a>
-      <a href="{{ url_for('dashboard.market_prices') }}">▣ <span>Market prices</span></a>
-      <a href="{{ url_for('dashboard.import_market_prices') }}">↥ <span>Import prices</span></a>
-      <a href="{{ url_for('profile.profile') }}">⚙ <span>Manage profile</span></a>
+    <a class="dashboard-brand" href="{{ url_for('dashboard.dashboard_home') }}"><img src="{{ url_for('static', filename='krishimandu-logo.png') }}" alt="KrishiMandu logo"></a>
+    <nav class="dashboard-nav" aria-label="Dashboard navigation">
+      <a class="active" href="{{ url_for('dashboard.dashboard_home') }}"><span class="nav-icon">⌂</span><span>Dashboard</span></a>
+      <a href="{{ url_for('dashboard.marketplace') }}"><span class="nav-icon">▦</span><span>Marketplace</span></a>
+      <a href="{{ url_for('dashboard.marketplace') }}"><span class="nav-icon">⌂</span><span>Browse Products</span></a>
+      <a href="{{ url_for('dashboard.market_prices') }}"><span class="nav-icon">⌁</span><span>Kalimati Prices</span></a>
+      <a href="{{ url_for('dashboard.price_history') }}"><span class="nav-icon">◷</span><span>Price History</span></a>
+      <a href="{{ url_for('dashboard.compare_prices') }}"><span class="nav-icon">♡</span><span>Price Watchlist</span></a>
+      <a href="{{ url_for('profile.profile') }}"><span class="nav-icon">♙</span><span>Profile</span></a>
+      <a href="{{ url_for('profile.profile') }}"><span class="nav-icon">⚙</span><span>Settings</span></a>
     </nav>
-    <div class="dashboard-user"><span class="avatar">{{ current_user.full_name[:2]|upper }}</span><span><strong>Admin</strong><small>{{ current_user.email }}</small></span></div>
+    <div class="sidebar-footer">
+      {% if current_user.is_authenticated %}
+      <div class="dashboard-user"><span class="avatar">{{ current_user.full_name[:2]|upper }}</span><span><strong>{{ current_user.full_name }}</strong><small>{{ current_user.role|title }}</small></span></div>
+      {% else %}
+      <a class="sidebar-login" href="{{ url_for('auth.login') }}"><span class="nav-icon">↪</span><span>Sign in to unlock</span></a>
+      {% endif %}
+    </div>
   </aside>
   <main class="dashboard-main">
-    <header class="dashboard-topbar"><div><p class="eyebrow">KrishiDirect overview</p><h1>Dashboard</h1><p class="muted">Welcome back! Here's your marketplace overview.</p></div><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout-button">Log out</button></form></header>
-    <section class="admin-metrics">
-      <article class="admin-metric"><span>Total Revenue</span><strong>Rs. {{ "%.0f"|format(total_revenue) }}</strong><small class="positive">↗ Marketplace orders</small><span class="metric-icon revenue">↗</span></article>
-      <article class="admin-metric"><span>Registered Users</span><strong>{{ total_users }}</strong><small>All roles</small><span class="metric-icon inventory">◇</span></article>
-      <article class="admin-metric"><span>Marketplace Listings</span><strong>{{ marketplace_listings }}</strong><small>Active products</small><span class="metric-icon listings">⌑</span></article>
+    <header class="dashboard-topbar">
+      <button class="sidebar-toggle" data-sidebar-toggle aria-label="Toggle navigation">☰</button>
+      <div class="topbar-copy"><p class="eyebrow">KrishiMandu overview</p><h1>Dashboard</h1><p class="muted">Welcome back! Here's your agricultural marketplace overview.</p>{% if latest_sync %}<small class="sync-status {% if latest_sync.status != 'success' %}sync-warning{% endif %}">Kalimati: {{ latest_sync.status|title }}{% if latest_sync.publication_date_bs %} · {{ latest_sync.publication_date_bs }}{% endif %}{% if latest_sync.status != "success" %} · Showing last successful data{% endif %}</small>{% endif %}</div>
+      <div class="topbar-actions">
+        <label class="dashboard-search"><span>⌕</span><input data-price-search type="search" placeholder="Search products..." aria-label="Search products"></label>
+        {% if current_user.is_authenticated %}
+        <div class="profile-wrap"><button class="profile-trigger" data-profile-toggle><span class="avatar">{{ current_user.full_name[:2]|upper }}</span><span><strong>{{ current_user.full_name }}</strong><small>{{ current_user.role|title }}</small></span><b>⌄</b></button><div class="popover profile-menu" data-profile-menu><a href="{{ url_for('profile.profile') }}">Profile & settings</a><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button>Log out</button></form></div></div>
+        {% else %}<a class="login-button" href="{{ url_for('auth.login') }}">Log in</a>{% endif %}
+      </div>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card"><div class="summary-icon purchases">↗</div><span>Total Purchases</span><strong>{% if current_user.is_authenticated %}{{ total_purchases }}{% else %}--{% endif %}</strong><small>{% if current_user.is_authenticated %}Completed marketplace purchases{% else %}Sign in to view your purchases{% endif %}</small></article>
+      <article class="summary-card"><div class="summary-icon products">▦</div><span>Available Products</span><strong>{{ available_products }}</strong><small>Active marketplace listings</small></article>
+      <article class="summary-card"><div class="summary-icon orders">◷</div><span>Active Orders</span><strong>{% if current_user.is_authenticated %}{{ active_orders }}{% else %}--{% endif %}</strong><small>{% if current_user.is_authenticated %}Orders needing attention{% else %}Sign in to view your orders{% endif %}</small></article>
+      <article class="summary-card"><div class="summary-icon alerts">♡</div><span>Price Watchlist Alerts</span><strong>{% if current_user.is_authenticated %}{{ watchlist_alerts }}{% else %}--{% endif %}</strong><small>Price changes you are tracking</small></article>
     </section>
-    <section class="admin-chart-grid">
-      <article class="admin-panel"><div class="panel-heading"><h2>Revenue Trend</h2><span>Last six months</span></div><div class="chart-wrap"><canvas id="revenue-chart" aria-label="Revenue trend"></canvas></div></article>
-      <article class="admin-panel"><div class="panel-heading"><h2>Marketplace Activity</h2><span>Current totals</span></div><div class="bar-chart">{% for label, count in [('Products', activity_counts[0]), ('Orders', activity_counts[1]), ('Farmers', activity_counts[2]), ('Buyers', activity_counts[3])] %}<div><span class="bar" style="height:{{ ((count / ([activity_counts[0], activity_counts[1], activity_counts[2], activity_counts[3]]|max or 1)) * 100)|round }}%"></span><strong>{{ count }}</strong><small>{{ label }}</small></div>{% endfor %}</div></article>
+
+    <section class="overview-grid">
+      <article class="overview-card"><div class="panel-heading"><div><h2>Kalimati Price Trends</h2><span>{{ trend_product }} · historical average</span></div><a href="{{ url_for('dashboard.price_history') }}">View history →</a></div><div class="chart-wrap"><canvas id="price-chart" aria-label="Kalimati price trends"></canvas>{% if not price_values %}<div class="chart-empty">Price history will appear after official data is added.</div>{% endif %}</div></article>
+      <article class="overview-card"><div class="panel-heading"><div><h2>Marketplace Overview</h2><span>Available product quantities</span></div><a href="{{ url_for('dashboard.marketplace') }}">Browse products →</a></div><div class="chart-wrap"><canvas id="market-chart" aria-label="Marketplace overview"></canvas>{% if not product_values %}<div class="chart-empty">Marketplace listings will appear here.</div>{% endif %}</div></article>
     </section>
-    <section class="admin-panel activity-panel"><div class="panel-heading"><h2>Recent Activity</h2></div>{% for activity in recent_activity %}<div class="activity-row"><span class="activity-dot"></span><div><strong>{{ activity.event|replace("_", " ")|title }}</strong><small>{{ activity.details or "Account activity recorded" }}</small><small>{{ activity.created_at.strftime("%d %b %Y, %H:%M") }}</small></div></div>{% else %}<div class="empty-state">No recent activity recorded.</div>{% endfor %}</section>
+
+    <section class="overview-card recent-activity"><div class="panel-heading"><div><h2>Recent Activity</h2><span>Purchases, listings, orders and price updates</span></div></div>
+      {% for activity in recent_activity %}<div class="activity-row"><span class="activity-dot"></span><div><strong>{{ activity.event|replace("_", " ")|title }}</strong><small>{{ activity.details or "Account activity recorded" }}</small><small>{{ activity.created_at.strftime("%d %b %Y, %H:%M") }}</small></div></div>{% else %}<div class="activity-empty"><span class="activity-dot"></span><div><strong>{% if current_user.is_authenticated %}No recent activity yet{% else %}Sign in to see your recent activity{% endif %}</strong><small>{% if current_user.is_authenticated %}Your purchases, listings and price alerts will appear here.{% else %}Your personalized activity will appear here after you log in.{% endif %}</small></div></div>{% endfor %}
+    </section>
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>new Chart(document.getElementById("revenue-chart"),{type:"line",data:{labels:{{ revenue_labels|tojson }},datasets:[{data:{{ revenue_values|tojson }},borderColor:"#159447",backgroundColor:"#15944718",fill:true,tension:.35,pointBackgroundColor:"#fff",pointBorderColor:"#159447",pointBorderWidth:2}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:"#edf1ed"}},x:{grid:{color:"#edf1ed"}}}}});</script>
-{% else %}
-<section class="card dashboard"><p class="eyebrow">KrishiDirect</p><h1>{{ title }}</h1><p>Your role-based workspace is ready.</p></section>
-{% endif %}{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const priceLabels={{ price_labels|tojson }}, priceValues={{ price_values|tojson }};
+const productLabels={{ product_labels|tojson }}, productValues={{ product_values|tojson }};
+if (priceValues.length) new Chart(document.getElementById("price-chart"), {type:"line", data:{labels:priceLabels,datasets:[{label:"Average price (NPR)",data:priceValues,borderColor:"#22c55e",backgroundColor:"#22c55e18",fill:true,tension:.35,pointRadius:3}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:"#edf1ed"}},x:{grid:{color:"#edf1ed"}}}}});
+if (productValues.length) new Chart(document.getElementById("market-chart"), {type:"bar", data:{labels:productLabels,datasets:[{label:"Quantity",data:productValues,backgroundColor:"#22c55e",borderRadius:6}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:"#edf1ed"}},x:{grid:{display:false}}}}});
+</script>
+{% endblock %}

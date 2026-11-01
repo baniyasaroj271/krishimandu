@@ -1,1 +1,29 @@
-{% extends "base.html" %}{% block content %}<form class="card form narrow" method="post" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>Import official Kalimati prices</h2><p class="muted">Use a permitted official/Open Data Nepal export. Required CSV columns: <code>product_name,minimum_price,maximum_price,average_price,publication_date</code>. Leave average blank when the source does not publish it.</p><label>CSV file<input type="file" name="file" accept=".csv" required></label><button class="primary">Import snapshots</button></form>{% endblock %}
+{% extends "base.html" %}{% block content %}<section class="dashboard-page">
+    <div class="card form narrow">
+        <h2>Automatic Kalimati synchronization</h2>
+        <p class="muted">The scheduler checks the official website automatically. Use Sync now to fetch the latest
+            published table immediately.</p>
+        <form method="post" action="{{ url_for('dashboard.sync_market_prices') }}"><input type="hidden"
+                name="csrf_token" value="{{ csrf_token() }}"><button class="primary">Sync now</button></form>
+        <p><a href="{{ url_for('dashboard.market_price_sync_status') }}">View current status</a> · <a
+                href="{{ url_for('dashboard.market_price_sync_history') }}">View sync history</a></p>
+    </div>
+    <form class="card form narrow" method="post" enctype="multipart/form-data"><input type="hidden" name="csrf_token"
+            value="{{ csrf_token() }}">
+        <h2>Backup CSV import</h2>
+        <p class="muted">Use a permitted official/Open Data Nepal export only when the website is unavailable.</p>
+        <label>CSV file<input type="file" name="file" accept=".csv" required></label><button class="primary">Import
+            snapshots</button>
+    </form>
+    <section class="card table-card">
+        <h2>Recent synchronization attempts</h2>
+        <div class="price-table">
+            <div class="price-row price-header">
+                <strong>Started</strong><strong>Status</strong><strong>Publication</strong><strong>Imported</strong>
+            </div>{% for sync in sync_history %}<div class="price-row"><span>{{ sync.started_at.strftime("%d %b %Y
+                    %H:%M") }}</span><span>{{ sync.status|title }}</span><span>{{ sync.publication_date_bs or "—"
+                    }}</span><span>{{ sync.imported_count }}</span></div>{% else %}<p class="empty-state">No
+                synchronization has run yet.</p>{% endfor %}
+        </div>
+    </section>
+</section>{% endblock %}

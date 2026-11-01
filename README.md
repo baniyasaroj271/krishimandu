@@ -38,6 +38,19 @@ snapshots in `market_price`; no current prices are generated when official data
 is missing. The official site currently has no documented public API, so admins
 can import a permitted CSV export at `/admin/market-prices/import` with the
 columns `product_name,minimum_price,maximum_price,average_price,publication_date`.
+The supplied Kalimati snapshot can be loaded once with
+`.venv\Scripts\flask --app app seed-market-prices`; repeat runs skip existing
+product/date rows.
+
+Automatic synchronization uses the official server-rendered daily table at
+`https://kalimatimarket.gov.np/price`, preserves the published Bikram Sambat
+date, and stores each publication as a historical snapshot. It runs in an
+APScheduler background job (default every 60 minutes), can be configured with
+`KALIMATI_SYNC_ENABLED`, `KALIMATI_SYNC_INTERVAL_MINUTES`, and
+`KALIMATI_SYNC_TIMEOUT_SECONDS`, and can be triggered by an admin at
+`/admin/market-prices/import`. The public historical page exposes an official
+`/api/price-history` endpoint; the application keeps its own imported snapshots
+for reliable charts and does not replace existing data when fetching fails.
 rishiDirect – Agri-Marketplace & Kalimati Mandi Price Tracker
 Project concept
  Nepal-focused

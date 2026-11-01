@@ -1,0 +1,100 @@
+product_name,market_name,unit,min_price,max_price,average_price,category,price_date
+आलु सेतो,Kalimati,kg,28,32,29.67,Vegetable,2026-11-01
+प्याज सुकेको (भारतीय),Kalimati,kg,85,90,87.50,Vegetable,2026-11-01
+गाजर (लोकल),Kalimati,kg,100,120,110.00,Vegetable,2026-11-01
+गाजर (तराई),Kalimati,kg,70,80,75.00,Vegetable,2026-11-01
+बन्दा (लोकल),Kalimati,kg,40,50,45.00,Vegetable,2026-11-01
+काउली स्थानिय,Kalimati,kg,60,70,65.00,Vegetable,2026-11-01
+काउली तराई,Kalimati,kg,40,50,45.00,Vegetable,2026-11-01
+मूला रातो,Kalimati,kg,40,50,45.00,Vegetable,2026-11-01
+सेतो मूला (हाइब्रीड),Kalimati,kg,40,50,45.00,Vegetable,2026-11-01
+भन्टा लाम्चो,Kalimati,kg,40,50,45.00,Vegetable,2026-11-01
+भन्टा डल्लो,Kalimati,kg,60,70,65.00,Vegetable,2026-11-01
+मटरकोशा,Kalimati,kg,140,150,145.00,Vegetable,2026-11-01
+घिउ सिमी (लोकल),Kalimati,kg,60,70,63.33,Vegetable,2026-11-01
+घिउ सिमी (हाइब्रीड),Kalimati,kg,60,70,63.33,Vegetable,2026-11-01
+घिउ सिमी (राजमा),Kalimati,kg,130,150,140.00,Vegetable,2026-11-01
+टाटे सिमी,Kalimati,kg,70,80,75.00,Vegetable,2026-11-01
+भटमासकोशा,Kalimati,kg,100,130,115.00,Vegetable,2026-11-01
+तितो करेला,Kalimati,kg,90,100,95.00,Vegetable,2026-11-01
+लौका,Kalimati,kg,50,60,55.00,Vegetable,2026-11-01
+परवर (लोकल),Kalimati,kg,70,80,75.00,Vegetable,2026-11-01
+परवर (तराई),Kalimati,kg,70,80,75.00,Vegetable,2026-11-01
+चिचिण्डो,Kalimati,kg,40,50,45.00,Vegetable,2026-11-01
+घिरौला,Kalimati,kg,30,50,40.00,Vegetable,2026-11-01
+हरियो फर्सी (डल्लो),Kalimati,kg,40,50,45.00,Vegetable,2026-11-01
+सजिवन,Kalimati,kg,200,250,225.00,Vegetable,2026-11-01
+भिण्डी,Kalimati,kg,70,90,80.00,Vegetable,2026-11-01
+सखरखण्ड,Kalimati,kg,80,90,85.00,Vegetable,2026-11-01
+पिंडालू,Kalimati,kg,60,70,65.00,Vegetable,2026-11-01
+स्कूस,Kalimati,kg,20,30,25.00,Vegetable,2026-11-01
+रायो साग,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+पालूगो साग,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+चमसूरको साग,Kalimati,kg,150,200,175.00,Vegetable,2026-11-01
+तोरीको साग,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+मेथीको साग,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+प्याज हरियो,Kalimati,kg,200,250,225.00,Vegetable,2026-11-01
+च्याउ (कन्य),Kalimati,kg,100,130,107.50,Vegetable,2026-11-01
+च्याउ (डल्ले),Kalimati,kg,280,330,305.00,Vegetable,2026-11-01
+राजा च्याउ,Kalimati,kg,300,330,320.00,Vegetable,2026-11-01
+सिताके च्याउ,Kalimati,kg,800,1000,900.00,Vegetable,2026-11-01
+कुरीलो,Kalimati,kg,700,800,750.00,Vegetable,2026-11-01
+न्यूरो,Kalimati,kg,90,100,95.00,Vegetable,2026-11-01
+चुकुन्दर,Kalimati,kg,80,90,85.00,Vegetable,2026-11-01
+रातो बन्दा,Kalimati,kg,130,150,140.00,Vegetable,2026-11-01
+सेलरी,Kalimati,kg,400,500,450.00,Vegetable,2026-11-01
+पार्सले,Kalimati,kg,2400,2800,2600.00,Vegetable,2026-11-01
+पुदीना,Kalimati,kg,600,700,650.00,Vegetable,2026-11-01
+गान्टे मूला,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+जिरीको साग,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+सौफको साग,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+इमली,Kalimati,kg,160,180,170.00,Other,2026-11-01
+तामा,Kalimati,kg,140,160,150.00,Other,2026-11-01
+तोफु,Kalimati,kg,140,160,150.00,Other,2026-11-01
+गुन्दुक,Kalimati,kg,300,350,325.00,Other,2026-11-01
+रुख टमाटर,Kalimati,kg,100,150,125.00,Vegetable,2026-11-01
+स्याउ (फूजी),Kalimati,kg,300,350,325.00,Fruit,2026-11-01
+स्याउ (जुम्ला),Kalimati,kg,250,350,300.00,Fruit,2026-11-01
+स्याउ (मुस्ताङ्ग),Kalimati,kg,200,250,225.00,Fruit,2026-11-01
+केरा (नेपाली),Kalimati,dozen,100,150,125.00,Fruit,2026-11-01
+केरा (मालभोग),Kalimati,dozen,100,150,125.00,Fruit,2026-11-01
+कागती,Kalimati,kg,200,300,250.00,Fruit,2026-11-01
+अनार,Kalimati,kg,300,350,325.00,Fruit,2026-11-01
+सुन्तला (भारतीय),Kalimati,kg,150,200,175.00,Fruit,2026-11-01
+तरबुजा (हरियो),Kalimati,kg,70,80,75.00,Fruit,2026-11-01
+मौसम,Kalimati,kg,150,200,175.00,Fruit,2026-11-01
+जुनार,Kalimati,kg,150,200,175.00,Fruit,2026-11-01
+भुई कटहर,Kalimati,piece,150,200,175.00,Fruit,2026-11-01
+काक्रो (लोकल),Kalimati,kg,60,70,65.00,Vegetable,2026-11-01
+काक्रो (हाइब्रीड),Kalimati,kg,30,40,35.00,Vegetable,2026-11-01
+काक्रो (लोकलक्रस),Kalimati,kg,60,70,65.00,Vegetable,2026-11-01
+निबुवा,Kalimati,kg,50,60,55.00,Fruit,2026-11-01
+नासपाती (चाइनिज),Kalimati,kg,250,300,275.00,Fruit,2026-11-01
+मेवा (नेपाली),Kalimati,kg,50,70,60.00,Fruit,2026-11-01
+मेवा (भारतीय),Kalimati,kg,90,100,95.00,Fruit,2026-11-01
+अम्बा,Kalimati,kg,150,200,175.00,Fruit,2026-11-01
+लप्सी,Kalimati,kg,70,80,75.00,Fruit,2026-11-01
+किवि,Kalimati,kg,200,300,250.00,Fruit,2026-11-01
+शरीफा,Kalimati,kg,150,200,175.00,Fruit,2026-11-01
+आभोकाडो,Kalimati,kg,200,300,250.00,Fruit,2026-11-01
+अमला,Kalimati,kg,70,80,75.00,Fruit,2026-11-01
+नरिवल (काँचो),Kalimati,piece,60,80,70.00,Fruit,2026-11-01
+नरिवल (हरियो),Kalimati,piece,150,200,175.00,Fruit,2026-11-01
+ड्रागन फ्रुट (नेपाली),Kalimati,kg,400,500,450.00,Fruit,2026-11-01
+अदुवा,Kalimati,kg,80,100,90.00,Spice,2026-11-01
+खुर्सानी सुकेको,Kalimati,kg,500,550,523.33,Spice,2026-11-01
+खुर्सानी हरियो (लाम्चो),Kalimati,kg,100,120,104.00,Spice,2026-11-01
+खुर्सानी हरियो (बुलेट),Kalimati,kg,120,130,122.50,Spice,2026-11-01
+खुर्सानी हरियो (माछे),Kalimati,kg,120,130,125.00,Spice,2026-11-01
+खुर्सानी हरियो (अकबरे),Kalimati,kg,150,200,175.00,Spice,2026-11-01
+भेडे खुर्सानी,Kalimati,kg,90,100,95.00,Vegetable,2026-11-01
+लसुन हरियो,Kalimati,kg,200,250,225.00,Spice,2026-11-01
+हरियो धनिया,Kalimati,kg,300,400,350.00,Spice,2026-11-01
+लसुन सुकेको चाइनिज,Kalimati,kg,220,260,243.33,Spice,2026-11-01
+लसुन सुकेको नेपाली,Kalimati,kg,220,260,243.33,Spice,2026-11-01
+छ्यापी सुकेको,Kalimati,kg,180,200,187.50,Spice,2026-11-01
+छ्यापी हरियो,Kalimati,kg,150,200,175.00,Spice,2026-11-01
+माछा सुकेको,Kalimati,kg,800,1000,900.00,Other,2026-11-01
+ताजा माछा (रहु),Kalimati,kg,340,370,355.00,Other,2026-11-01
+ताजा माछा (बचुवा),Kalimati,kg,300,330,315.00,Other,2026-11-01
+ताजा माछा (छडी),Kalimati,kg,320,350,335.00,Other,2026-11-01

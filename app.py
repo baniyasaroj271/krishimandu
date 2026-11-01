@@ -1,9 +1,13 @@
+import csv
 import os
+from datetime import date
 from pathlib import Path
+from decimal import Decimal
 
 from flask import Flask, redirect, send_from_directory, url_for
 from sqlalchemy import inspect, text
 from dotenv import load_dotenv
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from config import Config
 from extensions import csrf, db, limiter, login_manager
@@ -38,7 +42,7 @@ def create_app(test_config=None):
 
     @app.get("/")
     def index():
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("dashboard.dashboard_home"))
 
     @app.get("/uploads/<path:filename>")
     def uploaded_file(filename):
@@ -71,13 +75,82 @@ def create_app(test_config=None):
             db.session.commit()
         print("Database initialized.")
 
+    @app.cli.command("seed-market-prices")
+    def seed_market_prices():
+        from models import MarketPrice
+
+        source = Path(app.root_path) / "data" / "kalimati_prices.csv"
+        imported = 0
+        with source.open(encoding="utf-8-sig", newline="") as stream:
+            for row in csv.DictReader(stream):
+                price_date = date.fromisoformat(row["price_date"])
+                existing = MarketPrice.query.filter_by(
+                    product_name=row["product_name"],
+                    market_name=row.get("market_name", "Kalimati"),
+                    price_date=price_date,
+                ).first()
+                if existing:
+                    continue
+                db.session.add(MarketPrice(
+                    product_name=row["product_name"],
+                    market_name=row.get("market_name", "Kalimati"),
+                    unit=row.get("unit", "kg"),
+                    min_price=Decimal(row["min_price"]),
+                    max_price=Decimal(row["max_price"]),
+                    average_price=Decimal(row["average_price"]),
+                    category=row.get("category") or None,
+                    source_date=price_date,
+                    price_date=price_date,
+                    source_url="https://kalimatimarket.gov.np/",
+                ))
+                imported += 1
+        db.session.commit()
+        print(f"Imported {imported} Kalimati market price rows.")
+
     with app.app_context():
         from models import User  # noqa: F401
         db.create_all()
+        _ensure_farmer_account()
         _add_missing_columns()
         _remove_verification_schema()
 
+    if app.config["KALIMATI_SYNC_ENABLED"] and not app.testing:
+        scheduler = BackgroundScheduler(daemon=True)
+        from kalimati import sync_daily_prices
+        scheduler.add_job(
+            sync_daily_prices,
+            "interval",
+            minutes=app.config["KALIMATI_SYNC_INTERVAL_MINUTES"],
+            args=[app],
+            id="kalimati-daily-sync",
+            replace_existing=True,
+            max_instances=1,
+            coalesce=True,
+        )
+        scheduler.start()
+        app.extensions["kalimati_scheduler"] = scheduler
+
     return app
+
+
+def _ensure_farmer_account():
+    from models import User
+
+    email = "farmers@gmail.com"
+    if User.query.filter_by(email=email).first():
+        return
+    db.session.add(User(
+        full_name="KrishiMandu Farmer",
+        email=email,
+        phone="+9779800000001",
+        password_hash=User.hash_password("password"),
+        role="farmer",
+        district="",
+        municipality="",
+        ward="",
+        address="Nepal",
+    ))
+    db.session.commit()
 
 
 def _add_missing_columns():
@@ -96,6 +169,10 @@ def _add_missing_columns():
             "average_price": "NUMERIC(12,2)", "category": "VARCHAR(30)",
             "source_date": "DATE", "source_url": "VARCHAR(500)",
             "synced_at": "DATETIME",
+            "product_name_ne": "VARCHAR(150)", "product_name_en": "VARCHAR(150)",
+            "market_date_bs": "VARCHAR(40)", "market_date_ad": "DATE",
+            "fetched_at": "DATETIME", "sync_status": "VARCHAR(20)",
+            "source_identity": "VARCHAR(180)",
         },
     }
     inspector = inspect(db.engine)

@@ -3,29 +3,87 @@ import io
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func, or_
 
 from extensions import db
 from models import (
     Cart, CartItem, CheckoutOrder, CheckoutOrderItem, FavouriteFarmer,
-    MarketPrice, Order, Product, User,
+    MarketPrice, MarketSync, Order, Product, User,
 )
 from security import role_required, save_upload
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
 
+def _dashboard_context(user=None):
+    from models import AuditLog
+
+    latest = db.session.query(func.max(MarketPrice.price_date)).scalar()
+    price_query = MarketPrice.query.filter_by(price_date=latest) if latest else MarketPrice.query.filter(False)
+    trend_name = db.session.query(
+        MarketPrice.product_name
+    ).group_by(MarketPrice.product_name).order_by(
+        func.count(MarketPrice.id).desc()
+    ).first()
+    trend_rows = MarketPrice.query.filter_by(
+        product_name=trend_name[0] if trend_name else ""
+    ).order_by(MarketPrice.price_date).all()
+    products = Product.query.filter_by(is_active=True).order_by(
+        Product.stock_quantity.desc()
+    ).limit(6).all()
+    latest_sync = MarketSync.query.order_by(MarketSync.started_at.desc()).first()
+
+    if user:
+        purchases = CheckoutOrder.query.filter_by(buyer_id=user.id).count()
+        active_orders = CheckoutOrder.query.filter(
+            CheckoutOrder.buyer_id == user.id,
+            CheckoutOrder.status.not_in(("Delivered", "Cancelled", "Completed")),
+        ).count()
+        activities = AuditLog.query.filter_by(user_id=user.id).order_by(
+            AuditLog.created_at.desc()
+        ).limit(6).all()
+    else:
+        purchases = 0
+        active_orders = 0
+        activities = []
+
+    return {
+        "dashboard_page": True,
+        "user_name": user.full_name if user else "there",
+        "total_purchases": purchases,
+        "available_products": Product.query.filter_by(is_active=True).count(),
+        "active_orders": active_orders,
+        "watchlist_alerts": 0,
+        "price_labels": [row.price_date.strftime("%d %b") for row in trend_rows] if user else [],
+        "price_values": [float(row.average_price or 0) for row in trend_rows] if user else [],
+        "trend_product": trend_name[0] if user and trend_name else "Sign in to view prices",
+        "product_labels": [product.english_name or product.name for product in products] if user else [],
+        "product_values": [float(product.stock_quantity or 0) for product in products] if user else [],
+        "recent_activity": activities,
+        "latest_price_count": price_query.count(),
+        "latest_sync": latest_sync,
+    }
+
+
 @dashboard_bp.get("/dashboard")
-@login_required
 def dashboard_home():
-    if current_user.role == "admin":
-        return redirect(url_for("dashboard.admin"))
+    user = current_user if current_user.is_authenticated else None
+    return render_template("dashboard.html", title="Dashboard", **_dashboard_context(user))
+
+
+@dashboard_bp.get("/farmer/dashboard")
+@login_required
+@role_required("farmer")
+def farmer():
+    products = Product.query.filter_by(
+        farmer_id=current_user.id
+    ).order_by(Product.created_at.desc()).all()
     return render_template(
-        "dashboard.html",
-        title=f"{current_user.role.title()} Dashboard",
-        admin_dashboard=False,
+        "farmer_dashboard.html",
+        products=products,
+        active_products=[product for product in products if product.is_active],
     )
 
 
@@ -98,6 +156,7 @@ def add_product():
                     minimum_order_quantity=minimum, harvest_date=harvest,
                     farm_location=request.form.get("farm_location", "").strip(),
                     description=request.form.get("description", "").strip(),
+                    is_active=True, is_approved=True,
                 ))
                 db.session.commit()
                 flash("Product added to your inventory.", "success")
@@ -250,7 +309,7 @@ def complete_order(order_id):
 
 @dashboard_bp.get("/marketplace")
 @login_required
-@role_required("reseller", "customer")
+@role_required("admin", "reseller", "customer")
 def marketplace():
     search = request.args.get("q", "").strip()
     category = request.args.get("category", "").strip()
@@ -443,7 +502,7 @@ def farmer_profile(farmer_id):
 
 @dashboard_bp.get("/marketplace/compare")
 @login_required
-@role_required("reseller", "customer")
+@role_required("admin", "reseller", "customer")
 def compare_prices():
     name = request.args.get("product", "").strip()
     products = Product.query.filter(Product.is_active.is_(True), or_(Product.is_approved.is_(True), Product.is_approved.is_(None)), Product.name.ilike(f"%{name}%")).all() if name else []
@@ -453,7 +512,7 @@ def compare_prices():
 
 @dashboard_bp.get("/marketplace/prices")
 @login_required
-@role_required("reseller", "customer")
+@role_required("admin", "reseller", "customer")
 def market_prices():
     latest = db.session.query(func.max(MarketPrice.price_date)).scalar_subquery()
     prices = MarketPrice.query.filter(MarketPrice.price_date == latest).order_by(MarketPrice.product_name).all()
@@ -462,7 +521,7 @@ def market_prices():
 
 @dashboard_bp.get("/marketplace/price-history")
 @login_required
-@role_required("reseller", "customer")
+@role_required("admin", "reseller", "customer")
 def price_history():
     product = request.args.get("product", "").strip()
     start = request.args.get("start", "")
@@ -479,9 +538,47 @@ def price_history():
     return render_template("price_history.html", prices=prices, chart=chart, product=product, start=start, end=end)
 
 
+@dashboard_bp.get("/api/market-prices")
+@login_required
+@role_required("admin", "reseller", "customer")
+def market_prices_api():
+    latest = db.session.query(func.max(MarketPrice.price_date)).scalar()
+    prices = MarketPrice.query.filter_by(price_date=latest).order_by(MarketPrice.product_name).all() if latest else []
+    return jsonify({
+        "publication_date_bs": prices[0].market_date_bs if prices else None,
+        "prices": [{
+            "product_name": price.product_name,
+            "unit": price.unit,
+            "minimum": float(price.min_price),
+            "maximum": float(price.max_price),
+            "average": float(price.average_price) if price.average_price is not None else None,
+            "category": price.category,
+        } for price in prices],
+    })
+
+
+@dashboard_bp.get("/api/market-prices/history")
+@login_required
+@role_required("admin", "reseller", "customer")
+def market_price_history_api():
+    product = request.args.get("product", "").strip()
+    query = MarketPrice.query
+    if product:
+        query = query.filter(MarketPrice.product_name.ilike(f"%{product}%"))
+    rows = query.order_by(MarketPrice.price_date, MarketPrice.product_name).all()
+    return jsonify({"history": [{
+        "product_name": row.product_name,
+        "date": row.price_date.isoformat(),
+        "market_date_bs": row.market_date_bs,
+        "minimum": float(row.min_price),
+        "maximum": float(row.max_price),
+        "average": float(row.average_price) if row.average_price is not None else None,
+    } for row in rows]})
+
+
 @dashboard_bp.get("/marketplace/price-fluctuation")
 @login_required
-@role_required("reseller", "customer")
+@role_required("admin", "reseller", "customer")
 def price_fluctuation():
     category = request.args.get("category", "").strip()
     query = MarketPrice.query.order_by(MarketPrice.product_name, MarketPrice.price_date)
@@ -531,7 +628,47 @@ def import_market_prices():
                 imported += 1
             db.session.commit()
             flash(f"Imported {imported} official price rows.", "success")
-    return render_template("market_price_import.html")
+    sync_history = MarketSync.query.order_by(MarketSync.started_at.desc()).limit(20).all()
+    return render_template("market_price_import.html", sync_history=sync_history)
+
+
+@dashboard_bp.get("/admin/market-prices/sync-history")
+@login_required
+@role_required("admin")
+def market_price_sync_history():
+    sync_history = MarketSync.query.order_by(MarketSync.started_at.desc()).limit(100).all()
+    return render_template("market_price_sync_history.html", sync_history=sync_history)
+
+
+@dashboard_bp.post("/admin/market-prices/sync")
+@login_required
+@role_required("admin")
+def sync_market_prices():
+    from kalimati import sync_daily_prices
+
+    result = sync_daily_prices()
+    flash(
+        f"Kalimati sync completed: {result.get('imported', 0)} new records."
+        if result["status"] == "success"
+        else f"Kalimati sync failed: {result.get('error', result['status'])}",
+        "success" if result["status"] == "success" else "error",
+    )
+    return redirect(url_for("dashboard.import_market_prices"))
+
+
+@dashboard_bp.get("/api/market-prices/status")
+@login_required
+@role_required("admin", "reseller", "customer")
+def market_price_sync_status():
+    sync = MarketSync.query.order_by(MarketSync.started_at.desc()).first()
+    return jsonify({
+        "status": sync.status if sync else "not_run",
+        "started_at": sync.started_at.isoformat() if sync else None,
+        "completed_at": sync.completed_at.isoformat() if sync and sync.completed_at else None,
+        "publication_date_bs": sync.publication_date_bs if sync else None,
+        "imported_count": sync.imported_count if sync else 0,
+        "error": sync.error_message if sync else None,
+    })
 
 
 @dashboard_bp.post("/marketplace/products/<int:product_id>/order")
@@ -563,40 +700,8 @@ def toggle_favourite_farmer(farmer_id):
 @login_required
 @role_required("admin")
 def admin():
-    from models import AuditLog, CheckoutOrder
-
-    users = User.query.count()
-    products = Product.query.count()
-    active_listings = Product.query.filter_by(is_active=True).count()
-    all_orders = CheckoutOrder.query.order_by(CheckoutOrder.created_at.desc()).all()
-    orders = all_orders[:8]
-    revenue = sum((order.total_amount for order in all_orders), Decimal("0"))
-    recent_activity = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(6).all()
-    farmers = User.query.filter_by(role="farmer").count()
-    buyers = User.query.filter(User.role.in_(("reseller", "customer"))).count()
-    now = datetime.now(timezone.utc)
-    month_labels = []
-    month_values = []
-    for offset in range(5, -1, -1):
-        month = (now.month - offset - 1) % 12 + 1
-        year = now.year + ((now.month - offset - 1) // 12)
-        month_labels.append(datetime(year, month, 1).strftime("%b"))
-        month_values.append(float(sum(
-            (order.total_amount for order in all_orders
-             if order.created_at and order.created_at.year == year and order.created_at.month == month),
-            Decimal("0"),
-        )))
     return render_template(
         "dashboard.html",
         title="Dashboard",
-        admin_dashboard=True,
-        total_users=users,
-        inventory_items=products,
-        marketplace_listings=active_listings,
-        total_revenue=revenue,
-        recent_activity=recent_activity,
-        recent_orders=orders,
-        revenue_labels=month_labels,
-        revenue_values=month_values,
-        activity_counts=[products, len(all_orders), farmers, buyers],
+        **_dashboard_context(current_user),
     )
